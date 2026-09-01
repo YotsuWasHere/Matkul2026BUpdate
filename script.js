@@ -175,7 +175,17 @@ function groupEffectiveCourses(courses){
 }
 function render(){
   $('#weekLabel').textContent=formatRange(currentWeek); $('#changesWeekHint').textContent=formatRange(currentWeek);
-  for(let i=0;i<5;i++) $('#date-'+(i+1)).textContent=formatDayDate(addDays(currentWeek,i));
+  const today=new Date();
+  const todayKey=fmtDateISO(today);
+  for(let i=0;i<5;i++){
+    const date=addDays(currentWeek,i);
+    $('#date-'+(i+1)).textContent=formatDayDate(date);
+    const isToday=fmtDateISO(date)===todayKey;
+    const head=document.querySelector(`.day-head[data-day=\"${i+1}\"]`);
+    const col=document.querySelector(`.day-column[data-day-col=\"${i+1}\"]`);
+    head?.classList.toggle('today',isToday);
+    col?.classList.toggle('today',isToday);
+  }
   renderTimeline(); renderHistory(); renderAdmin();
   $('#courseCount').textContent=state.courses.length;
   $('#changeCount').textContent=state.changes.filter(c=>c.week_key===weekKey(currentWeek)).length;
@@ -237,7 +247,7 @@ function renderHistory(){
     return `<article class="history-card">
       <div class="history-top"><div><div class="history-title">${escapeHtml(course.name)}${course.code?` · ${escapeHtml(course.code)}`:''}</div></div><span class="history-badge">${escapeHtml(timing)}</span></div>
       <div class="history-grid"><div class="history-box"><small>Original</small><strong>${escapeHtml(original)}</strong></div><div class="history-arrow">→</div><div class="history-box"><small>Perubahan</small><strong>${escapeHtml(current)}</strong></div></div>
-      <div class="history-footer"><span>📅 Berlaku: ${escapeHtml(formatRange(currentWeek))}</span><span>${c.mode==='Virtual'?'💻 Virtual':'🏫 Tatap Muka'}</span>${c.room?`<span>📍 ${escapeHtml(c.room)}</span>`:''}<span>👨‍🏫 Dosen: ${escapeHtml(course.lecturer||'Dosen Pengampu —')}</span>${findPjName(c)!=='—'?`<span class="history-editor">✏️ Diubah oleh: ${escapeHtml(findPjName(c))}</span>`:''}</div>
+      <div class="history-footer"><span>📅 Berlaku: ${escapeHtml(formatRange(currentWeek))}</span><span>${c.mode==='Virtual'?'💻 Virtual':'🏫 Tatap Muka'}</span>${c.room?`<span>📍 ${escapeHtml(c.room)}</span>`:''}<span>👤 PJ: ${escapeHtml(findPjName(c))}</span></div>
       ${c.note?`<div class="history-note">📝 ${escapeHtml(c.note)}</div>`:''}
     </article>`;
   }).join('');
@@ -295,8 +305,8 @@ function applyTheme(theme,save=true){ document.documentElement.dataset.theme=the
 function toggleTheme(){ applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); }
 function applyAccent(name,save=true){ const cfg=ACCENTS[name]||ACCENTS.violet; const root=document.documentElement; root.dataset.accent=name||'violet'; root.style.setProperty('--accent',cfg.accent); root.style.setProperty('--accent-2',cfg.accent2); root.style.setProperty('--accent-rgb',cfg.rgb); if(save)localStorage.setItem(ACCENT_KEY,name||'violet'); renderAccentPicker(); }
 function renderAccentPicker(){ const box=$('#themeSwatches'); if(!box)return; box.innerHTML=Object.entries(ACCENTS).map(([key,cfg])=>`<button type="button" class="theme-swatch" data-accent="${key}" title="${cfg.name}" aria-label="${cfg.name}" style="--swatch:${cfg.accent};--swatch-2:${cfg.accent2}"><span></span><b>${cfg.name}</b></button>`).join(''); box.querySelectorAll('[data-accent]').forEach(btn=>btn.addEventListener('click',()=>applyAccent(btn.dataset.accent)));}
-function togglePalette(){ const p=$('#themePicker'), btn=$('#paletteToggle'); if(!p||!btn)return; const isHidden=p.classList.contains('hidden'); p.classList.toggle('hidden',!isHidden); btn.setAttribute('aria-expanded',String(isHidden)); }
-function closePalette(){ const p=$('#themePicker'), btn=$('#paletteToggle'); if(p)p.classList.add('hidden'); if(btn)btn.setAttribute('aria-expanded','false'); }
+function togglePalette(){ const p=$('#themePicker'); if(!p)return; const open=p.classList.toggle('hidden'); $('#paletteToggle').setAttribute('aria-expanded',String(!open)); }
+function closePalette(){ const p=$('#themePicker'); if(p)p.classList.add('hidden'); $('#paletteToggle')?.setAttribute('aria-expanded','false'); }
 function showToast(message,type='success'){ const box=document.createElement('div'); box.className=`toast ${type}`; box.textContent=message; $('#toastRegion').appendChild(box); setTimeout(()=>box.remove(),3400); }
 function escapeHtml(s){ return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
 function escapeAttr(s){ return escapeHtml(s).replace(/`/g,'&#096;'); }
@@ -310,7 +320,7 @@ async function init(){
   finally { $('#loadingScreen')?.classList.add('hidden'); }
 
   $('#themeToggle').addEventListener('click',toggleTheme);
-  $('#paletteToggle').addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); togglePalette(); });
+  $('#paletteToggle').addEventListener('click',(e)=>{e.stopPropagation();togglePalette();});
   document.addEventListener('click',(e)=>{if(!e.target.closest('.theme-picker-wrap'))closePalette();});
   $$('.category-tab').forEach(btn=>btn.addEventListener('click',()=>{ activeCategory=btn.dataset.category; render(); }));
   $('#prevWeek').addEventListener('click',()=>{currentWeek=addDays(currentWeek,-7);render();});
