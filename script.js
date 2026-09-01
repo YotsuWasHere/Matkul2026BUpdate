@@ -66,7 +66,12 @@ function initSupabase(){
   if(!window.supabase?.createClient) throw new Error('Supabase JS gagal dimuat. Periksa koneksi internet.');
   if(!cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes('PASTE_SUPABASE')) throw new Error('SUPABASE_URL belum diisi di config.js.');
   if(!cfg.SUPABASE_ANON_KEY || cfg.SUPABASE_ANON_KEY.includes('PASTE_SUPABASE')) throw new Error('SUPABASE_ANON_KEY belum diisi di config.js.');
-  supabaseClient=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+
+  // Supabase JS membutuhkan project URL, bukan URL endpoint REST.
+  // Normalisasi supaya config yang tidak sengaja berisi /rest/v1 tetap bisa dipakai.
+  const normalizedUrl=String(cfg.SUPABASE_URL).trim().replace(/\/+$/,'').replace(/\/rest\/v1(?:\/)?$/i,'');
+  if(!/^https?:\/\//i.test(normalizedUrl)) throw new Error('SUPABASE_URL harus diawali http:// atau https://.');
+  supabaseClient=window.supabase.createClient(normalizedUrl,cfg.SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 }
 
 function courseFromRow(r){
