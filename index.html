@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="2026B — Sistem manajemen jadwal kuliah kelas 2026B." />
+  <title>2026B — Jadwal Kuliah Kelas 2026B</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="loadingScreen" class="loading-screen" aria-live="polite" aria-label="Memuat jadwal">
+    <div class="loading-spinner"></div>
+  </div>
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
+  <div class="mouse-glow" aria-hidden="true"></div>
+  <div class="grain"></div>
+
+  <div id="toastRegion" class="toast-region" aria-live="polite"></div>
+
+  <header class="site-header">
+    <div class="brand-wrap">
+      <div class="brand-mark">🎓</div>
+      <div>
+        <div class="brand-name">2026B</div>
+        <div class="brand-subtitle">Jadwal Kuliah Kelas 2026B</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="adminIdentity" class="admin-identity hidden">
+        <div class="identity-name" id="adminNameLabel">—</div>
+        <span class="role-badge">Admin/PJ</span>
+      </div>
+      <button class="icon-button" id="themeToggle" type="button" aria-label="Ganti tema">
+        <span id="themeIcon">🌙</span>
+      </button>
+      <button class="header-button" id="loginButton" type="button">🔐 Login PJ</button>
+      <button class="header-button hidden" id="logoutButton" type="button">↩ Logout</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero-card">
+      <div>
+        <span class="eyebrow">SCHEDULE CONTROL CENTER</span>
+        <h1>Jadwal original, perubahan per minggu, satu sumber informasi.</h1>
+        <p>Mahasiswa melihat versi terbaru tanpa login. PJ dapat mengubah jadwal dasar atau menata pertemuan tertentu tanpa merusak jadwal original.</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-card"><strong id="courseCount">10</strong><span>mata kuliah</span></div>
+        <div class="stat-card"><strong id="changeCount">0</strong><span>perubahan minggu ini</span></div>
+        <div class="stat-card"><strong>Tisha Farica Tsaqif</strong><span>PJ Kelas</span></div>
+      </div>
+    </section>
+
+    <section class="category-tabs" aria-label="Jenis mata kuliah">
+      <button class="category-tab active" id="tabMKWU" type="button" data-category="MKWU">
+        <span class="tab-kicker">PAGE 01</span>
+        <strong>MKWU</strong>
+        <small id="mkwuCount">—</small>
+      </button>
+      <button class="category-tab" id="tabMKWK" type="button" data-category="MKWK">
+        <span class="tab-kicker">PAGE 02</span>
+        <strong>MKWK</strong>
+        <small id="mkwkCount">—</small>
+      </button>
+    </section>
+
+    <section class="week-toolbar">
+      <button class="nav-button" id="prevWeek" type="button">← <span class="wide-label">Minggu Sebelumnya</span><span class="compact-label">Prev</span></button>
+      <div class="week-center">
+        <div class="week-label" id="weekLabel">—</div>
+        <button class="today-button" id="todayButton" type="button">Minggu Ini</button>
+      </div>
+      <button class="nav-button" id="nextWeek" type="button"><span class="wide-label">Minggu Berikutnya</span><span class="compact-label">Next</span> →</button>
+    </section>
+
+    <section class="legend-row">
+      <span class="legend-pill status-fixed">✅ Tetap</span>
+      <span class="legend-pill status-moved">🔄 Dipindahkan</span>
+      <span class="legend-pill mode-virtual">💻 Virtual</span>
+      <span class="legend-pill mode-onsite">🏫 Tatap Muka</span>
+      <span class="legend-note">Perubahan pertemuan hanya berlaku pada minggu yang dipilih.</span>
+    </section>
+
+    <section class="calendar-panel">
+      <div class="calendar-head">
+        <div class="time-head">JAM</div>
+        <div class="day-head" data-day="1"><span>Senin</span><small id="date-1">—</small></div>
+        <div class="day-head" data-day="2"><span>Selasa</span><small id="date-2">—</small></div>
+        <div class="day-head" data-day="3"><span>Rabu</span><small id="date-3">—</small></div>
+        <div class="day-head" data-day="4"><span>Kamis</span><small id="date-4">—</small></div>
+        <div class="day-head" data-day="5"><span>Jumat</span><small id="date-5">—</small></div>
+      </div>
+      <div class="calendar-body" id="calendarBody">
+        <div class="time-axis" id="timeAxis"></div>
+        <div class="day-column" data-day-col="1"></div>
+        <div class="day-column" data-day-col="2"></div>
+        <div class="day-column" data-day-col="3"></div>
+        <div class="day-column" data-day-col="4"></div>
+        <div class="day-column" data-day-col="5"></div>
+      </div>
+    </section>
+
+    <section class="changes-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">CHANGE LOG</span>
+          <h2>Perubahan jadwal</h2>
+        </div>
+        <span class="section-hint">Minggu aktif: <strong id="changesWeekHint">—</strong></span>
+      </div>
+      <div id="changeHistoryList" class="history-list"></div>
+    </section>
+
+    <section class="admin-section hidden" id="adminSection">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">ADMIN / PJ</span>
+          <h2>Kelola mata kuliah</h2>
+        </div>
+        <span class="section-hint">Semua PJ memiliki akses penuh.</span>
+      </div>
+      <div class="admin-grid" id="adminGrid"></div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop hidden" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal-card small-modal">
+      <button class="modal-close" data-close="loginModal" aria-label="Tutup">×</button>
+      <div class="modal-icon">🔐</div>
+      <h2 id="loginTitle">Login PJ</h2>
+      <p class="modal-description">Pilih nama PJ lalu masukkan password.</p>
+      <form id="loginForm" class="form-stack">
+        <label>Nama PJ
+          <select id="loginPJ" required></select>
+        </label>
+        <label>Masukkan Password
+          <input id="loginCode" inputmode="numeric" maxlength="3" pattern="\d{3}" placeholder="password" required />
+        </label>
+        <div class="login-note">Login divalidasi terhadap data PJ di Supabase. Untuk keamanan produksi yang lebih kuat, gunakan Supabase Auth.</div>
+        <button class="primary-button" type="submit">LOGIN</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+    <div class="modal-card editor-modal">
+      <button class="modal-close" data-close="editorModal" aria-label="Tutup">×</button>
+      <div class="editor-kicker" id="editorKicker">Edit</div>
+      <h2 id="editorTitle">Editor</h2>
+      <div class="editor-tabs">
+        <button class="editor-tab active" id="tabCourse" type="button" data-mode="course">✏️ Edit Jadwal</button>
+        <button class="editor-tab" id="tabMeeting" type="button" data-mode="meeting">🔄 Edit Pertemuan</button>
+      </div>
+
+      <form id="courseForm" class="form-grid">
+        <input type="hidden" id="courseIdField" />
+        <label>Nama Mata Kuliah<input id="courseName" required /></label>
+        <label>Kode<input id="courseCode" maxlength="10" placeholder="Opsional" /></label>
+        <label>Hari<select id="courseDay" required></select></label>
+        <label>Jam Mulai<input id="courseStart" type="time" required /></label>
+        <label>Jam Selesai<input id="courseEnd" type="time" required /></label>
+        <label>Ruangan / Kode<input id="courseRoom" placeholder="Opsional" /></label>
+        <label>Mode<select id="courseMode"><option value="Virtual">Virtual</option><option value="Tatap Muka">Tatap Muka</option></select></label>
+        <label>Dosen Pengampu<input id="courseLecturer" placeholder="—" /></label>
+        <label>Status<select id="courseStatus"><option value="Tetap">Tetap</option><option value="Dipindahkan">Dipindahkan</option></select></label>
+        <div class="form-actions span-2"><button class="ghost-button" data-close="editorModal" type="button">Batal</button><button class="primary-button" type="submit">Simpan Jadwal</button></div>
+      </form>
+
+      <form id="meetingForm" class="form-grid hidden">
+        <input type="hidden" id="meetingCourseId" />
+        <label>Minggu<br><input id="meetingWeek" type="date" required /><small id="meetingWeekCaption" class="field-hint">—</small></label>
+        <label>Status<select id="meetingStatus"><option value="Tetap">Tetap</option><option value="Dipindahkan">Dipindahkan</option></select></label>
+        <label>Tanggal Baru<input id="meetingDate" type="date" required /></label>
+        <label>Jam Mulai<input id="meetingStart" type="time" required /></label>
+        <label>Jam Selesai<input id="meetingEnd" type="time" required /></label>
+        <label>Mode<select id="meetingMode"><option value="Virtual">Virtual</option><option value="Tatap Muka">Tatap Muka</option></select></label>
+        <label>Ruangan<input id="meetingRoom" placeholder="—" /></label>
+        <label class="span-2">Catatan<textarea id="meetingNote" rows="3" placeholder="Contoh: Dosen berhalangan."></textarea></label>
+        <div class="override-preview span-2" id="overridePreview"></div>
+        <div class="form-actions span-2">
+          <button class="danger-button" id="deleteMeetingButton" type="button">Hapus Perubahan</button>
+          <span class="form-spacer"></span>
+          <button class="ghost-button" data-close="editorModal" type="button">Batal</button>
+          <button class="primary-button" type="submit">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <span>2026B · Schedule Control Center</span>
+    <span><span id="dataConnectionStatus">Menghubungkan ke database…</span> · Supabase online</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
