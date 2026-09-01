@@ -95,9 +95,10 @@ button { cursor: pointer; }
 .brand-subtitle { color:var(--muted); font-size:.84rem; margin-top:2px; }
 .header-actions { display:flex; align-items:center; gap:10px; }
 .theme-controls { display:flex; align-items:center; gap:8px; }
-.theme-picker-wrap { position:relative; }
+.theme-picker-wrap { position:relative; z-index:45; }
+.palette-button { position:relative; z-index:46; pointer-events:auto; }
 .palette-button { font-size:1rem; }
-.theme-picker { position:absolute; top:52px; right:0; width:230px; padding:13px; border:1px solid var(--line); border-radius:16px; background:var(--card); box-shadow:var(--shadow); backdrop-filter:blur(18px); z-index:40; }
+.theme-picker { position:absolute; top:52px; right:0; width:230px; padding:13px; border:1px solid var(--line); border-radius:16px; background:var(--card); box-shadow:var(--shadow); backdrop-filter:blur(18px); z-index:60; pointer-events:auto; }
 .theme-picker-title { font-size:.72rem; font-weight:800; color:var(--muted); margin-bottom:10px; }
 .theme-swatches { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
 .theme-swatch { display:flex; align-items:center; gap:8px; padding:8px; border:1px solid var(--line); border-radius:11px; background:var(--surface); color:var(--text); text-align:left; transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease; }
@@ -273,4 +274,10 @@ textarea { resize:vertical; }
   .span-2 { grid-column:span 1; }
   .site-footer { flex-direction:column; width:94vw; }
   .category-tabs { grid-template-columns:1fr; }
+}
+/* Keep theme controls side-by-side on desktop and mobile. */
+.theme-controls { display:inline-flex !important; flex-direction:row !important; flex-wrap:nowrap !important; align-items:center; gap:8px; }
+.theme-picker-wrap { display:inline-flex; align-items:center; }
+@media (max-width:720px){
+  .theme-controls { gap:6px; }
 }
