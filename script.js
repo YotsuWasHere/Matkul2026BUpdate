@@ -295,8 +295,8 @@ function applyTheme(theme,save=true){ document.documentElement.dataset.theme=the
 function toggleTheme(){ applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); }
 function applyAccent(name,save=true){ const cfg=ACCENTS[name]||ACCENTS.violet; const root=document.documentElement; root.dataset.accent=name||'violet'; root.style.setProperty('--accent',cfg.accent); root.style.setProperty('--accent-2',cfg.accent2); root.style.setProperty('--accent-rgb',cfg.rgb); if(save)localStorage.setItem(ACCENT_KEY,name||'violet'); renderAccentPicker(); }
 function renderAccentPicker(){ const box=$('#themeSwatches'); if(!box)return; box.innerHTML=Object.entries(ACCENTS).map(([key,cfg])=>`<button type="button" class="theme-swatch" data-accent="${key}" title="${cfg.name}" aria-label="${cfg.name}" style="--swatch:${cfg.accent};--swatch-2:${cfg.accent2}"><span></span><b>${cfg.name}</b></button>`).join(''); box.querySelectorAll('[data-accent]').forEach(btn=>btn.addEventListener('click',()=>applyAccent(btn.dataset.accent)));}
-function togglePalette(){ const p=$('#themePicker'); if(!p)return; const open=p.classList.toggle('hidden'); $('#paletteToggle').setAttribute('aria-expanded',String(!open)); }
-function closePalette(){ const p=$('#themePicker'); if(p)p.classList.add('hidden'); $('#paletteToggle')?.setAttribute('aria-expanded','false'); }
+function togglePalette(){ const p=$('#themePicker'), btn=$('#paletteToggle'); if(!p||!btn)return; const isHidden=p.classList.contains('hidden'); p.classList.toggle('hidden',!isHidden); btn.setAttribute('aria-expanded',String(isHidden)); }
+function closePalette(){ const p=$('#themePicker'), btn=$('#paletteToggle'); if(p)p.classList.add('hidden'); if(btn)btn.setAttribute('aria-expanded','false'); }
 function showToast(message,type='success'){ const box=document.createElement('div'); box.className=`toast ${type}`; box.textContent=message; $('#toastRegion').appendChild(box); setTimeout(()=>box.remove(),3400); }
 function escapeHtml(s){ return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
 function escapeAttr(s){ return escapeHtml(s).replace(/`/g,'&#096;'); }
@@ -310,7 +310,7 @@ async function init(){
   finally { $('#loadingScreen')?.classList.add('hidden'); }
 
   $('#themeToggle').addEventListener('click',toggleTheme);
-  $('#paletteToggle').addEventListener('click',(e)=>{e.stopPropagation();togglePalette();});
+  $('#paletteToggle').addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); togglePalette(); });
   document.addEventListener('click',(e)=>{if(!e.target.closest('.theme-picker-wrap'))closePalette();});
   $$('.category-tab').forEach(btn=>btn.addEventListener('click',()=>{ activeCategory=btn.dataset.category; render(); }));
   $('#prevWeek').addEventListener('click',()=>{currentWeek=addDays(currentWeek,-7);render();});
