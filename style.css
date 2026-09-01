@@ -297,3 +297,4 @@ textarea { resize:vertical; }
 @media (max-width:720px){
   .theme-controls { gap:6px; }
 }
+.history-editor { opacity:.72; }
