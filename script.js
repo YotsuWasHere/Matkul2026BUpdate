@@ -237,7 +237,7 @@ function renderHistory(){
     return `<article class="history-card">
       <div class="history-top"><div><div class="history-title">${escapeHtml(course.name)}${course.code?` · ${escapeHtml(course.code)}`:''}</div></div><span class="history-badge">${escapeHtml(timing)}</span></div>
       <div class="history-grid"><div class="history-box"><small>Original</small><strong>${escapeHtml(original)}</strong></div><div class="history-arrow">→</div><div class="history-box"><small>Perubahan</small><strong>${escapeHtml(current)}</strong></div></div>
-      <div class="history-footer"><span>📅 Berlaku: ${escapeHtml(formatRange(currentWeek))}</span><span>${c.mode==='Virtual'?'💻 Virtual':'🏫 Tatap Muka'}</span>${c.room?`<span>📍 ${escapeHtml(c.room)}</span>`:''}<span>👤 PJ: ${escapeHtml(findPjName(c))}</span></div>
+      <div class="history-footer"><span>📅 Berlaku: ${escapeHtml(formatRange(currentWeek))}</span><span>${c.mode==='Virtual'?'💻 Virtual':'🏫 Tatap Muka'}</span>${c.room?`<span>📍 ${escapeHtml(c.room)}</span>`:''}<span>👨‍🏫 Dosen: ${escapeHtml(course.lecturer||'Dosen Pengampu —')}</span>${findPjName(c)!=='—'?`<span class="history-editor">✏️ Diubah oleh: ${escapeHtml(findPjName(c))}</span>`:''}</div>
       ${c.note?`<div class="history-note">📝 ${escapeHtml(c.note)}</div>`:''}
     </article>`;
   }).join('');
