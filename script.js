@@ -1,4 +1,13 @@
 const THEME_KEY = '2026B_THEME';
+const ACCENT_KEY = '2026B_ACCENT';
+const ACCENTS = {
+  violet: { name:'Violet', accent:'#655cf6', accent2:'#8a74ff', rgb:'101 92 246' },
+  blue: { name:'Ocean Blue', accent:'#3b82f6', accent2:'#60a5fa', rgb:'59 130 246' },
+  cyan: { name:'Cyan', accent:'#06b6d4', accent2:'#22d3ee', rgb:'6 182 212' },
+  emerald: { name:'Emerald', accent:'#10b981', accent2:'#34d399', rgb:'16 185 129' },
+  rose: { name:'Rose', accent:'#f43f5e', accent2:'#fb7185', rgb:'244 63 94' },
+  amber: { name:'Amber', accent:'#f59e0b', accent2:'#fbbf24', rgb:'245 158 11' }
+};
 const DAYS = ['Senin','Selasa','Rabu','Kamis','Jumat'];
 const MINUTES_START = 7 * 60;
 const MINUTES_END = 21 * 60;
@@ -60,18 +69,33 @@ function setConnectionStatus(text, isError=false){
   if(el){ el.textContent=text; el.style.color=isError?'var(--danger)':''; }
 }
 
+function normalizeSupabaseUrl(value){
+  const raw=String(value??'').trim();
+  if(!raw) throw new Error('SUPABASE_URL belum diisi di config.js.');
+  if(!/^https?:\/\//i.test(raw)) throw new Error('SUPABASE_URL harus diawali http:// atau https://.');
+
+  let u;
+  try{ u=new URL(raw); }
+  catch{ throw new Error('SUPABASE_URL tidak valid. Salin Project URL dari Supabase Dashboard → Settings → API.'); }
+
+  // URL Dashboard: https://supabase.com/dashboard/project/<ref>
+  const dashboardMatch=u.hostname==='supabase.com' ? u.pathname.match(/^\/dashboard\/project\/([a-z0-9]+)(?:\/|$)/i) : null;
+  if(dashboardMatch) return `https://${dashboardMatch[1]}.supabase.co`;
+
+  // Untuk project URL, path seperti /rest/v1 atau path lain dibuang.
+  // Supabase JS membutuhkan origin project, bukan endpoint REST.
+  return u.origin;
+}
+
 function initSupabase(){
   const cfg=window.APP_CONFIG || {};
   if(!cfg.SUPABASE_ENABLED) throw new Error('Supabase masih dinonaktifkan di config.js.');
   if(!window.supabase?.createClient) throw new Error('Supabase JS gagal dimuat. Periksa koneksi internet.');
-  if(!cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes('PASTE_SUPABASE')) throw new Error('SUPABASE_URL belum diisi di config.js.');
-  if(!cfg.SUPABASE_ANON_KEY || cfg.SUPABASE_ANON_KEY.includes('PASTE_SUPABASE')) throw new Error('SUPABASE_ANON_KEY belum diisi di config.js.');
+  if(!cfg.SUPABASE_URL || String(cfg.SUPABASE_URL).includes('PASTE_SUPABASE')) throw new Error('SUPABASE_URL belum diisi di config.js.');
+  if(!cfg.SUPABASE_ANON_KEY || String(cfg.SUPABASE_ANON_KEY).includes('PASTE_SUPABASE')) throw new Error('SUPABASE_ANON_KEY belum diisi di config.js.');
 
-  // Supabase JS membutuhkan project URL, bukan URL endpoint REST.
-  // Normalisasi supaya config yang tidak sengaja berisi /rest/v1 tetap bisa dipakai.
-  const normalizedUrl=String(cfg.SUPABASE_URL).trim().replace(/\/+$/,'').replace(/\/rest\/v1(?:\/)?$/i,'');
-  if(!/^https?:\/\//i.test(normalizedUrl)) throw new Error('SUPABASE_URL harus diawali http:// atau https://.');
-  supabaseClient=window.supabase.createClient(normalizedUrl,cfg.SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+  const normalizedUrl=normalizeSupabaseUrl(cfg.SUPABASE_URL);
+  supabaseClient=window.supabase.createClient(normalizedUrl,String(cfg.SUPABASE_ANON_KEY).trim(),{auth:{persistSession:false,autoRefreshToken:false}});
 }
 
 function courseFromRow(r){
@@ -266,9 +290,13 @@ async function deleteMeeting(){
   catch(err){console.error(err);showToast(`Gagal menghapus perubahan: ${err.message}`,'error');}
 }
 
-function setupTheme(){ const saved=localStorage.getItem(THEME_KEY); const prefers=window.matchMedia?.('(prefers-color-scheme: dark)').matches; applyTheme(saved||'dark',false); }
+function setupTheme(){ const saved=localStorage.getItem(THEME_KEY); const prefers=window.matchMedia?.('(prefers-color-scheme: dark)').matches; applyTheme(saved||'dark',false); applyAccent(localStorage.getItem(ACCENT_KEY)||'violet',false); renderAccentPicker(); }
 function applyTheme(theme,save=true){ document.documentElement.dataset.theme=theme; $('#themeIcon').textContent=theme==='dark'?'☀️':'🌙'; if(save)localStorage.setItem(THEME_KEY,theme); }
 function toggleTheme(){ applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); }
+function applyAccent(name,save=true){ const cfg=ACCENTS[name]||ACCENTS.violet; const root=document.documentElement; root.dataset.accent=name||'violet'; root.style.setProperty('--accent',cfg.accent); root.style.setProperty('--accent-2',cfg.accent2); root.style.setProperty('--accent-rgb',cfg.rgb); if(save)localStorage.setItem(ACCENT_KEY,name||'violet'); renderAccentPicker(); }
+function renderAccentPicker(){ const box=$('#themeSwatches'); if(!box)return; box.innerHTML=Object.entries(ACCENTS).map(([key,cfg])=>`<button type="button" class="theme-swatch" data-accent="${key}" title="${cfg.name}" aria-label="${cfg.name}" style="--swatch:${cfg.accent};--swatch-2:${cfg.accent2}"><span></span><b>${cfg.name}</b></button>`).join(''); box.querySelectorAll('[data-accent]').forEach(btn=>btn.addEventListener('click',()=>applyAccent(btn.dataset.accent)));}
+function togglePalette(){ const p=$('#themePicker'); if(!p)return; const open=p.classList.toggle('hidden'); $('#paletteToggle').setAttribute('aria-expanded',String(!open)); }
+function closePalette(){ const p=$('#themePicker'); if(p)p.classList.add('hidden'); $('#paletteToggle')?.setAttribute('aria-expanded','false'); }
 function showToast(message,type='success'){ const box=document.createElement('div'); box.className=`toast ${type}`; box.textContent=message; $('#toastRegion').appendChild(box); setTimeout(()=>box.remove(),3400); }
 function escapeHtml(s){ return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
 function escapeAttr(s){ return escapeHtml(s).replace(/`/g,'&#096;'); }
@@ -282,6 +310,8 @@ async function init(){
   finally { $('#loadingScreen')?.classList.add('hidden'); }
 
   $('#themeToggle').addEventListener('click',toggleTheme);
+  $('#paletteToggle').addEventListener('click',(e)=>{e.stopPropagation();togglePalette();});
+  document.addEventListener('click',(e)=>{if(!e.target.closest('.theme-picker-wrap'))closePalette();});
   $$('.category-tab').forEach(btn=>btn.addEventListener('click',()=>{ activeCategory=btn.dataset.category; render(); }));
   $('#prevWeek').addEventListener('click',()=>{currentWeek=addDays(currentWeek,-7);render();});
   $('#nextWeek').addEventListener('click',()=>{currentWeek=addDays(currentWeek,7);render();});

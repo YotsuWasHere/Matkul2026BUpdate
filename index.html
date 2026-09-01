@@ -34,9 +34,18 @@
         <div class="identity-name" id="adminNameLabel">—</div>
         <span class="role-badge">Admin/PJ</span>
       </div>
-      <button class="icon-button" id="themeToggle" type="button" aria-label="Ganti tema">
-        <span id="themeIcon">🌙</span>
-      </button>
+      <div class="theme-controls">
+        <button class="icon-button" id="themeToggle" type="button" aria-label="Ganti mode terang atau gelap" title="Mode terang / gelap">
+          <span id="themeIcon">🌙</span>
+        </button>
+        <div class="theme-picker-wrap">
+          <button class="icon-button palette-button" id="paletteToggle" type="button" aria-label="Pilih warna tema" aria-expanded="false" title="Pilih warna tema">🎨</button>
+          <div class="theme-picker hidden" id="themePicker" role="dialog" aria-label="Pilih warna tema">
+            <div class="theme-picker-title">Warna tema</div>
+            <div class="theme-swatches" id="themeSwatches"></div>
+          </div>
+        </div>
+      </div>
       <button class="header-button" id="loginButton" type="button">🔐 Login PJ</button>
       <button class="header-button hidden" id="logoutButton" type="button">↩ Logout</button>
     </div>
@@ -52,7 +61,7 @@
       <div class="hero-stats">
         <div class="stat-card"><strong id="courseCount">10</strong><span>mata kuliah</span></div>
         <div class="stat-card"><strong id="changeCount">0</strong><span>perubahan minggu ini</span></div>
-        <div class="stat-card"><strong>Tisha Farica Tsaqif</strong><span>PJ Kelas</span></div>
+        <div class="stat-card"><strong>Tisha F.</strong><span>PJ Kelas</span></div>
       </div>
     </section>
 
